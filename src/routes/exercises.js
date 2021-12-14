@@ -4,7 +4,7 @@ import User from "../models/User.js";
 import multer from "multer";
 import parseErrors from "../utils/parseErrors.js";
 import ffmpeg from "fluent-ffmpeg";
-import {unlink} from "fs";
+import fs from "fs";
 
 const router = express.Router();
 
@@ -94,6 +94,20 @@ router.post("/create_thumbnail", (req, res) => {
             filename: "thumbnail-%b.png"
         });
 });
+
+// Borítókép és a hozzá tartozó viddeó eltávolítása
+router.post("/delete_files", (req, res) => {
+  const {filePath, thumbnailPath} = req.body.data;
+  fs.unlink(filePath, err => {
+    if(err) return res.status(400).json({errors: {global: "Hiba történt a fájl törlése közben!"}})
+  })
+
+  fs.unlink(thumbnailPath, err => {
+    if(err) return res.status(400).json({errors: {global: "Hiba történt a fájl törlése közben!"}})
+  })
+
+  return res.json({filePath: "", thumbnailPath: ""})
+})
 
 router.post("/get_exercises", (req, res) => {
   if(req.body.user){
