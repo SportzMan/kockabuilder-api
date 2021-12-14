@@ -94,7 +94,8 @@ schema.methods.generateJWT = function generateJWT() {
       email: this.email,
       username: this.username,
       isAdmin: this.isAdmin,
-      isTrainer: this.isTrainer
+      isTrainer: this.isTrainer,
+      membership: this.membership
     },
     process.env.JWT_SECRET
   );
@@ -123,7 +124,8 @@ schema.methods.toAuthJSON = function toAuthJSON() {
     username: this.username,
     token: this.generateJWT(),
     isAdmin: this.isAdmin,
-    isTrainer: this.isTrainer
+    isTrainer: this.isTrainer,
+    membership: this.membership
   };
 };
 // Belépéskor a token mellett natív módon is betöltésre kerülnek az alkalmazás működéséhez szükséges változók.
