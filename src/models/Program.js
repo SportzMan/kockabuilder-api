@@ -29,6 +29,10 @@ const programSchema = mongoose.Schema({
 
     thumbnailPath: {
         type: String
+    },
+
+    isFree:{
+        type: Boolean
     }
 },
 { timestamps: true }
@@ -52,6 +56,10 @@ programSchema.methods.setThumbnail = function setThumbnail(thumbnailPath){
 
 programSchema.methods.addWorkout = function addWorkout(workout){
     this.workouts.push(workout);
+}
+
+programSchema.methods.setType = function setType(value){
+    this.isFree = value
 }
 
 programSchema.plugin(uniqueValidator, { message: "Már létezik ilyen nevű edzésprogram!" });

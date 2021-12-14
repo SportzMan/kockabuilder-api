@@ -81,9 +81,7 @@ router.post("/edit_user", (req, res) => {
       user.setTrainerRight(data.isTrainer);
       user.save().then(res.json({ user: user }));
     } else {
-      res
-        .status(400)
-        .json({
+      res.status(400).json({
           errors: {
             global: "Hiba történt a felhasználó adatainak módosítása közben!",
           },
@@ -91,5 +89,31 @@ router.post("/edit_user", (req, res) => {
     }
   });
 });
+
+router.post("/membership", (req, res) => {
+  const { data } = req.body;
+
+  User.findOne({ email: data.user.email}).then((user) => {
+    const today = new Date()
+    if(user){
+      if(user.membership < today){
+        today.setDate(today.getDate() + data.duration)
+        user.setMembership(today)
+        user.save().then(res.json({ user: user }));
+      }
+      else {
+        const date = new Date(user.membership)
+        date.setDate( date.getDate()+data.duration)
+        user.setMembership(date)
+        user.save().then(res.json({ user: user }));
+      }
+    }else {
+      res.status(400).json({
+        errors: {
+          global: "Hiba történt a felhasználó adatainak módosítása közben!",
+        },
+      });}
+  })
+})
 
 export default router;

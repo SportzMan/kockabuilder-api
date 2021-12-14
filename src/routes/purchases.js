@@ -15,7 +15,7 @@ router.post("/add_purchase", (req, res) => {
 
   User.findOne({ email: user.email}).lean().exec((error, user) => {
     const purchase = new Purchase({name: membership.description, user: user._id, duration: membership.duration, price: membership.duration})
-    console.log(purchase)
+
     purchase.save()
     .then((purchaseRecord) => {
       res.json({ program: purchaseRecord})

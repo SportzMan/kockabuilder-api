@@ -47,10 +47,11 @@ router.post("/delete_file", (req, res) => {
 
 // Új edzés létrehozása
 router.post("/add_program", (req, res) => {
-  const { name, owner, workouts, thumbnailPath, description } = req.body.program;
+  const { name, owner, workouts, thumbnailPath, description, isfree } = req.body.program;
   const program = new Program({ name });
   program.setDesc(description);
   program.setThumbnail(thumbnailPath);
+  program.setType(isfree);
 
 // A User model alapján megkeressük a paraméterben megkapott felhasználót, majd beálltjuk a hivatkozást
 // Segítség: https://stackoverflow.com/questions/38298927/get-id-with-mongoose
