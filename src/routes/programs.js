@@ -57,7 +57,6 @@ router.post("/add_program", (req, res) => {
   User.findOne({ email: owner.email }).lean().exec((error, user) => {
     program.setOwner(user._id )
     if(error){
-        console.log("User.findOne")
         return res.status(400).json({erros: {global: "Nem sikerült létrehozni a bejegyzést mert nem létezik a felhasználó."}})
     }
   })

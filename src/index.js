@@ -12,6 +12,7 @@ import users from "./routes/users.js";
 import exercises from "./routes/exercises.js";
 import workouts from "./routes/workouts.js";
 import programs from "./routes/programs.js";
+import purchases from "./routes/purchases.js";
 
 
 dotenv.config();
@@ -28,6 +29,7 @@ app.use("/api/users", users);
 app.use("/api/exercises", exercises);
 app.use("/api/workouts", workouts);
 app.use("/api/programs", programs);
+app.use("/api/purchases", purchases);
 
 
 app.use('/uploads', express.static('uploads'));

@@ -7,21 +7,27 @@ import parseErrors from "../utils/parseErrors.js";
 const router = express.Router();
 
 router.post("/add_purchase", (req, res) => {
-  let purchase = new Purchase();
-  User.findOne( { email: req.body.user.email} ).lean().exec((error, user) => {
+  const {user, membership} = req.body.purchase;
+
+  const purchase = new Purchase({name: membership.description});
+  purchase.setDuration(membership.duration);
+  purchase.setPrice(membership.price);
+
+  User.findOne({ email: user.email}).lean().exec((error, user) => {
+    const purchase = new Purchase({name: membership.description, user: user._id, duration: membership.duration, price: membership.duration})
+    console.log(purchase)
+    purchase.save()
+    .then((purchaseRecord) => {
+      res.json({ program: purchaseRecord})
+    })
+    .catch((err) => {res.status(400).json({ errors: parseErrors(err.errors) }) })
+
     if(error){
       return res.status(400).json({erros: {global: "Nem sikerült létrehozni a bejegyzést mert nem létezik a felhasználó."}})
-    }else {
-      purchase.setUser(user._id)
     }
+      
   })
 
-  purchase.setDuration(req.body.duration);
-  purchase.setPrice(req.body.price);
-
-  purchase.save()
-    .then(res => res.status(200).json({purchase}))
-    .catch(err => res.status(400).json({errors: parseErrors(err.errors)}))
 })
 
 router.post("/get_purchases", (res, req) => {

@@ -5,6 +5,11 @@ const purchaseSchema = mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+        required: true
+    },
+
+    name: {
+        type: String,
         required: true,
         index: true
     },
@@ -34,5 +39,9 @@ purchaseSchema.methods.setPrice = function setPrice(price){
     this.price = price;
 }
 
+purchaseSchema.methods.setName = function setName(name){
+    this.name = name;
+}
 
-export default mongoose.model("Program", purchaseSchema);
+
+export default mongoose.model("Purchase", purchaseSchema);
