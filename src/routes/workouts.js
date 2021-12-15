@@ -5,6 +5,7 @@ import User from "../models/User.js";
 import multer from "multer";
 import parseErrors from "../utils/parseErrors.js";
 import fs from "fs";
+import path from "path";
 
 
 const router = express.Router();
@@ -22,11 +23,20 @@ const workoutStorage = multer.diskStorage({
 
 })
 
-const upload = multer({ storage: workoutStorage }).single("workout");
-// Borítókép feltöltése
+const upload = multer({ storage: workoutStorage,
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname)
+    if(ext !== ".jpg" && ext !== ".jpeg" && ext !== ".png"){
+        console.log(ext)
+        return cb(new Error());
+    }
+    cb(null, true)
+  }
+ }).single("workout");
+//////////  Borítókép feltöltése
 router.post("/upload_file", (req, res) => {
     upload(req, res, (err) => {
-        if (err instanceof multer.MulterError) {
+        if (err) {
             return res.json({ errors: {global: "A fájl feltöltése sikertelen volt!"} });
         } else {
            return res.json({ thumbnailPath: res.req.file.path});
@@ -34,7 +44,7 @@ router.post("/upload_file", (req, res) => {
     })
 });
 
-// Borítókép eltávolítása
+//////////  Borítókép eltávolítása
 router.post("/delete_file", (req, res) => {
   const filePath = req.body.file;
   fs.unlink(filePath, err => {
@@ -44,19 +54,19 @@ router.post("/delete_file", (req, res) => {
   return res.json({thumbnailPath: ""})
 })
 
-// Új edzés létrehozása
+//////////  Új edzés létrehozása
 router.post("/add_workout", (req, res) => {
   const { name, owner, workoutExercises, thumbnailPath, description } = req.body.workout;
   const workout = new Workout({ name });
   workout.setDesc(description);
   workout.setThumbnail(thumbnailPath);
 
+
 // A User model alapján megkeressük a paraméterben megkapott felhasználót, majd beálltjuk a hivatkozást
 // Segítség: https://stackoverflow.com/questions/38298927/get-id-with-mongoose
   User.findOne({ email: owner.email }).lean().exec((error, user) => {
     workout.setOwner(user._id )
     if(error){
-        console.log("User.findOne")
         return res.status(400).json({erros: {global: "Nem sikerült létrehozni a bejegyzést mert nem létezik a felhasználó."}})
     }
   })
@@ -65,9 +75,8 @@ router.post("/add_workout", (req, res) => {
   workoutExercises.forEach(item => {
 
     Exercise.findOne({ name: item.Exercise.name }).lean().exec((error, ex) => {
-      workout.addWorkoutExercise({exercise: ex._id, reps: item.reps, rest: item.rest})
+      workout.addWorkoutExercise({exercise: ex._id, name: item.Exercise.name, thumbnailPath: item.Exercise.thumbnailPath, reps: item.reps, rest: item.rest})
       if(error){
-        console.log("Exercise.findOne")
         return res.status(400).json({errors: {global: "Nem sikerült létrehozni a bejegyzést mert nem létezik a gyakorlat."}})
       }
     })
@@ -75,14 +84,65 @@ router.post("/add_workout", (req, res) => {
   })
 
   workout.save()
-    .then((wRecord) => {
-      console.log("volt mentés")
-      res.json({ workout: wRecord});
-    })
+    .then(wRecord => 
+      res.json({ workout: wRecord})
+    )
     .catch((err) => {res.status(400).json({ errors: parseErrors(err.errors) });
-    console.log(parseErrors(err.errors))});
+    });
 });
 
+//////////  Edzés módosítása
+router.post("/update_workout", (req, res) => {
+  console.log(req.body)
+  const {workout} = req.body;
+
+  Workout.findOne({name: workout.originalName}).then((work) => {
+    if(work){
+      work.setName(workout.name)
+      work.setDesc(workout.description)
+      work.setThumbnail(workout.thumbnailPath)
+      work.resetExercises();
+
+      work.exercises.forEach(item => {
+        Workout.findOne({ name: item.name }).lean().exec((error, exercise) => {
+          work.addWorkoutExercise(exercise)
+          if(error){
+            return res.status(400).json({errors: {global: "Nem sikerült létrehozni a bejegyzést mert nem létezik az edzés!"}})
+          }
+        })
+    
+      })
+  
+      work.save()
+        .then(wRecord => {
+          res.json({workout: wRecord})
+        })
+        .catch((err) => res.status(400).json({ errors: parseErrors(err.errors) }));
+    }
+    else {
+      res.status(400).json({
+        errors: {
+          global: "Hiba történt az edzés adatainak módosítása közben!",
+        },
+      });
+    }
+
+  })
+});
+//////////  Edzés törlése
+
+router.post("/delete_workout", (req, res) => {
+  const {workout} = req.body;
+
+  Workout.findOneAndRemove({name: workout.name})
+    .then(() => res.status(200).json({success: "Sikeres törlés!"}))
+    .catch(() => res.status(400).json({ errors: {global: "Hiba történt az edzés törlése közben!"}}))
+})
+
+//////////  Összes edzés lekérése
+// Meghívható paraméterül átadott felhasználóval és peraméter nélkül
+// Paraméteres esetben a felhasználó által készített edzéssel adja vissza
+// Paraméter nélkül az összes edzéssel tér vissza
 router.post("/get_workouts", (req, res) => {
   if(req.body.user){
     User.find({email: req.body.user.email}).then((user)=>{

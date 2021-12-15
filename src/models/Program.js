@@ -62,6 +62,10 @@ programSchema.methods.setType = function setType(value){
     this.isFree = value
 }
 
+programSchema.methods.resetWorkouts = function setType(){
+    this.workouts = []
+}
+
 programSchema.plugin(uniqueValidator, { message: "Már létezik ilyen nevű edzésprogram!" });
 
 export default mongoose.model("Program", programSchema);

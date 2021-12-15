@@ -28,7 +28,9 @@ const workoutSchema = mongoose.Schema({
             ref: "Exercise"
         }, 
         reps: Number,
-        rest: Number  
+        rest: Number,
+        name: String,
+        thumbnailPath: String  
     }],
 
     thumbnailPath: {
@@ -56,6 +58,10 @@ workoutSchema.methods.setThumbnail = function setThumbnail(thumbnailPath){
 
 workoutSchema.methods.addWorkoutExercise = function addWorkoutExercise(exercise){
     this.exercises.push(exercise);
+}
+
+workoutSchema.methods.resetExercises = function resetExercises(){
+    this.exercises = []
 }
 
 workoutSchema.plugin(uniqueValidator, { message: "Már létezik ilyen nevű edzés!" });
