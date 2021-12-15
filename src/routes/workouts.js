@@ -93,7 +93,6 @@ router.post("/add_workout", (req, res) => {
 
 //////////  Edzés módosítása
 router.post("/update_workout", (req, res) => {
-  console.log(req.body)
   const {workout} = req.body;
 
   Workout.findOne({name: workout.originalName}).then((work) => {
@@ -103,9 +102,10 @@ router.post("/update_workout", (req, res) => {
       work.setThumbnail(workout.thumbnailPath)
       work.resetExercises();
 
-      work.exercises.forEach(item => {
-        Workout.findOne({ name: item.name }).lean().exec((error, exercise) => {
-          work.addWorkoutExercise(exercise)
+      workout.workoutExercises.forEach(item => {
+        console.log(item)
+        Exercise.findOne({ name: item.name }).lean().exec((error, ex) => {
+          work.addWorkoutExercise({exercise: ex._id, name: item.name, thumbnailPath: item.thumbnailPath, reps: item.reps, rest: item.rest})
           if(error){
             return res.status(400).json({errors: {global: "Nem sikerült létrehozni a bejegyzést mert nem létezik az edzés!"}})
           }
