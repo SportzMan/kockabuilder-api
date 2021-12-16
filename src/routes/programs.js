@@ -169,4 +169,12 @@ router.post("/get_programs", (req, res) => {
     }
 })
 
+router.post("/get_program", (req, res) => {
+  const {program} = req.body;
+  Program.findOne({name: program.name}).then(program => {
+    if(program) res.json({program})
+    else res.status(400).json({errors: { global: "Hiba történt az edzésprogram lekérése közben!"}})
+  })
+})
+
 export default router;
