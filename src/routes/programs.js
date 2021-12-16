@@ -5,6 +5,7 @@ import User from "../models/User.js";
 import multer from "multer";
 import parseErrors from "../utils/parseErrors.js";
 import fs from "fs";
+import path from "path";
 
 
 const router = express.Router();
@@ -23,7 +24,7 @@ const programStorage = multer.diskStorage({
 })
 
 const upload = multer({ storage: programStorage,
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req, file, cb) => {  // Fájl kiterjesztés vizsgálata: csak jpg, jpeg és png elfogadott
     const ext = path.extname(file.originalname)
     if(ext !== ".jpg" && ext !== ".jpeg" && ext !== ".png"){
         console.log(ext)
@@ -36,7 +37,7 @@ const upload = multer({ storage: programStorage,
 router.post("/upload_file", function(req, res) {
     upload(req, res, (err) => {
         if (err instanceof multer.MulterError) {
-            return res.json({ errors: {global: "A fájl feltöltése sikertelen volt!"} });
+            return res.json({ errors: {global: "A fájl feltöltése sikertelen volt! Csak jpg/jpeg/png kiterjesztésű fájlok elfogadottak"} });
         } else {
            return res.json({ thumbnailPath: res.req.file.path});
         }
@@ -45,8 +46,8 @@ router.post("/upload_file", function(req, res) {
 
 ////////// Borítókép eltávolítása
 router.post("/delete_file", (req, res) => {
-  const filePath = req.body.file;
-  fs.unlink(filePath, err => {
+  const {thumbnailPath} = req.body.file;
+  fs.unlink(thumbnailPath, err => {
     if(err) return res.status(400).json({errors: {global: "Hiba történt a fájl törlése közben!"}})
   })
 
@@ -73,7 +74,7 @@ router.post("/add_program", (req, res) => {
   // Létre kell hoznunk az edzéshez kapcsolódó workoutExercise objektumokat, majd a PUSH segítségével beküldjük
   workouts.forEach(item => {
     Workout.findOne({ name: item.name }).lean().exec((error, workout) => {
-      program.addWorkout(workout)
+      program.addWorkout({workout: workout._id, name: workout.name, thumbnailPath: workout.thumbnailPath})
       if(error){
         return res.status(400).json({errors: {global: "Nem sikerült létrehozni a bejegyzést mert nem létezik az edzés!"}})
       }
@@ -90,7 +91,6 @@ router.post("/add_program", (req, res) => {
 
 //////////  Edzésprogram módosítása
 router.post("/update_program", (req, res) => {
-  console.log(req.body)
   const {program} = req.body;
 
   Program.findOne({name: program.originalName}).then((prog) => {
@@ -103,7 +103,7 @@ router.post("/update_program", (req, res) => {
 
       prog.workouts.forEach(item => {
         Workout.findOne({ name: item.name }).lean().exec((error, workout) => {
-          prog.addWorkout(workout)
+          prog.addWorkout({workout: workout._id, name: workout.name, thumbnailPath: workout.thumbnailPath})
           if(error){
             return res.status(400).json({errors: {global: "Nem sikerült létrehozni a bejegyzést mert nem létezik az edzés!"}})
           }
@@ -113,6 +113,7 @@ router.post("/update_program", (req, res) => {
   
       prog.save()
         .then(progRecord => {
+          console.log(progRecord)
           res.json({program: progRecord})
         })
         .catch((err) => res.status(400).json({ errors: parseErrors(err.errors) }));
@@ -127,8 +128,8 @@ router.post("/update_program", (req, res) => {
 
   })
 });
-//////////  Edzésprogram törlése
 
+//////////  Edzésprogram törlése
 router.post("/delete_program", (req, res) => {
   const {program} = req.body;
 

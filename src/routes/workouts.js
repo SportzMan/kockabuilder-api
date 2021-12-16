@@ -37,7 +37,7 @@ const upload = multer({ storage: workoutStorage,
 router.post("/upload_file", (req, res) => {
     upload(req, res, (err) => {
         if (err) {
-            return res.json({ errors: {global: "A fájl feltöltése sikertelen volt!"} });
+            return res.json({ errors: {global: "A fájl feltöltése sikertelen volt! Csak jpg/jpeg/png kiterjesztésű fájlok elfogadottak"} });
         } else {
            return res.json({ thumbnailPath: res.req.file.path});
         }
