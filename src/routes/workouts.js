@@ -46,8 +46,8 @@ router.post("/upload_file", (req, res) => {
 
 //////////  Borítókép eltávolítása
 router.post("/delete_file", (req, res) => {
-  const filePath = req.body.file;
-  fs.unlink(filePath, err => {
+  const {thumbnailPath} = req.body.file;
+  fs.unlink(thumbnailPath, err => {
     if(err) return res.status(400).json({errors: {global: "Hiba történt a fájl törlése közben!"}})
   })
 
