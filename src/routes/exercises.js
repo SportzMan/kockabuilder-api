@@ -177,4 +177,14 @@ router.post("/get_exercises", (req, res) => {
         })
     }
 });
+
+//////////  Konkrét gyakorlat lekérése
+router.post("/get_exercise", (req, res) => {
+  const {exercise} = req.body;
+  Exercise.findOne({_id: exercise.exercise}).then(ex => {
+    if(ex) res.json({exercise: ex, reps: exercise.reps, rest: exercise.rest})
+    else res.status(400).json({errors: { global: "Hiba történt a gyakorlat lekérése közben!"}})
+  })
+})
+
 export default router;

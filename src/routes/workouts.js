@@ -172,9 +172,7 @@ router.post("/get_workouts", (req, res) => {
 
 //////////  Adott edzés lekérése
 router.post("/get_workout", (req, res) => {
-  console.log(req.body)
   Workout.findOne({name: req.body.workout.name}).then(workout => {
-    console.log(workout)
     if(workout) res.json({workout})
     else res.status(400).json({errors: { global: "Hiba történt az edzés lekérése közben!"}})
   })
