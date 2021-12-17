@@ -1,5 +1,4 @@
 import express from 'express';
-import cors from "cors";
 import path from 'path';
 import { fileURLToPath } from 'url';
 import mongoose from "mongoose";
@@ -13,6 +12,7 @@ import exercises from "./routes/exercises.js";
 import workouts from "./routes/workouts.js";
 import programs from "./routes/programs.js";
 import purchases from "./routes/purchases.js";
+import events from "./routes/events.js";
 
 
 dotenv.config();
@@ -30,7 +30,7 @@ app.use("/api/exercises", exercises);
 app.use("/api/workouts", workouts);
 app.use("/api/programs", programs);
 app.use("/api/purchases", purchases);
-
+app.use("/api/events", events);
 
 app.use('/uploads', express.static('uploads'));
 

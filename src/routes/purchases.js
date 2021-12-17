@@ -9,16 +9,12 @@ const router = express.Router();
 router.post("/add_purchase", (req, res) => {
   const {user, membership} = req.body.purchase;
 
-  const purchase = new Purchase({name: membership.description});
-  purchase.setDuration(membership.duration);
-  purchase.setPrice(membership.price);
-
   User.findOne({ email: user.email}).lean().exec((error, user) => {
     const purchase = new Purchase({name: membership.description, user: user._id, duration: membership.duration, price: membership.duration})
 
     purchase.save()
     .then((purchaseRecord) => {
-      res.json({ program: purchaseRecord})
+      res.json({ purchase: purchaseRecord})
     })
     .catch((err) => {res.status(400).json({ errors: parseErrors(err.errors) }) })
 
@@ -30,7 +26,7 @@ router.post("/add_purchase", (req, res) => {
 
 })
 
-router.post("/get_purchases", (res, req) => {
+router.post("/get_purchases", (req, res) => {
   if(req.body.user){
     User.find({email: req.body.user.email}).then((user)=>{
       if(user){
@@ -39,10 +35,10 @@ router.post("/get_purchases", (res, req) => {
               res.json({ purchases });
             } else{
               res.status(400)
-              .json({ errors: { global: "Hiba történt az edzésprogramok lekérése közben!" } });
+              .json({ errors: { global: "Hiba történt a fizetések lekérése közben!" } });
             }
             })
-      }else res.status(400).json({ errors: { global: "Hiba történt az edzésprogramok lekérése közben!"}})
+      }else res.status(400).json({ errors: { global: "Hiba történt a fizetések lekérése közben!"}})
     })
 
     }else{
@@ -51,7 +47,7 @@ router.post("/get_purchases", (res, req) => {
           res.json({ purchases });
         } else{
           res.status(400)
-          .json({ errors: { global: "Hiba történt az edzésprogramok lekérése közben!" } });
+          .json({ errors: { global: "Hiba történt a fizetések lekérése közben!" } });
         }
         })
     }
