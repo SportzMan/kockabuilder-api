@@ -74,7 +74,7 @@ router.post("/add_program", (req, res) => {
   // Létre kell hoznunk az edzéshez kapcsolódó workoutExercise objektumokat, majd a PUSH segítségével beküldjük
   workouts.forEach(item => {
     Workout.findOne({ name: item.name }).lean().exec((error, workout) => {
-      program.addWorkout({workout: workout._id, name: workout.name, thumbnailPath: workout.thumbnailPath})
+      program.addWorkout({workout: workout._id})
       if(error){
         return res.status(400).json({errors: {global: "Nem sikerült létrehozni a bejegyzést mert nem létezik az edzés!"}})
       }
@@ -103,7 +103,7 @@ router.post("/update_program", (req, res) => {
 
       prog.workouts.forEach(item => {
         Workout.findOne({ name: item.name }).lean().exec((error, workout) => {
-          prog.addWorkout({workout: workout._id, name: workout.name, thumbnailPath: workout.thumbnailPath})
+          prog.addWorkout({workout: workout._id})
           if(error){
             return res.status(400).json({errors: {global: "Nem sikerült létrehozni a bejegyzést mert nem létezik az edzés!"}})
           }
@@ -171,7 +171,7 @@ router.post("/get_programs", (req, res) => {
 
 router.post("/get_program", (req, res) => {
   const {program} = req.body;
-  Program.findOne({name: program.name}).then(program => {
+  Program.findById(program).then(program => {
     if(program) res.json({program})
     else res.status(400).json({errors: { global: "Hiba történt az edzésprogram lekérése közben!"}})
   })

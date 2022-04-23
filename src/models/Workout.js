@@ -22,15 +22,21 @@ const workoutSchema = mongoose.Schema({
         required: true
     },
 
-    exercises: [{
-        exercise: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Exercise"
-        }, 
-        reps: Number,
-        rest: Number,
-        name: String,
-        thumbnailPath: String  
+    groups: [{
+        exercises: [{
+            exercise: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Exercise"
+            }, 
+            reps: Number,
+            rest: Number,
+            name: String,
+            thumbnailPath: String  
+        }],
+        rounds : {
+            type: Number,
+            required: true
+        }
     }],
 
     thumbnailPath: {
@@ -56,8 +62,16 @@ workoutSchema.methods.setThumbnail = function setThumbnail(thumbnailPath){
     this.thumbnailPath = thumbnailPath;
 }
 
+workoutSchema.methods.setRounds = function setRounds(rounds){
+    this.rounds = rounds;
+}
+
 workoutSchema.methods.addWorkoutExercise = function addWorkoutExercise(exercise){
     this.exercises.push(exercise);
+}
+
+workoutSchema.methods.addWorkoutGroup = function addWorkoutGroup(group){
+    this.groups.push(group);
 }
 
 workoutSchema.methods.resetExercises = function resetExercises(){

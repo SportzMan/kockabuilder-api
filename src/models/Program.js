@@ -25,9 +25,7 @@ const programSchema = mongoose.Schema({
     workouts: [{
         workout: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Workout"},
-        name: String,
-        thumbnailPath: String
+            ref: "Workout"}
     }],
 
     thumbnailPath: {
