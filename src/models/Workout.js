@@ -22,16 +22,17 @@ const workoutSchema = mongoose.Schema({
         required: true
     },
 
-    groups: [{
-        exercises: [{
+    workoutGroups: [{
+        workoutExercises: [{
             exercise: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "Exercise"
             }, 
-            reps: Number,
-            rest: Number,
-            name: String,
-            thumbnailPath: String  
+            reps: {type: Number, required: true},
+            rest: {type: Number, required: true},
+            type: {type: Boolean, required: true},
+            name: {type: String, required: true},
+            thumbnailPath: {type: String, required: true}  
         }],
         rounds : {
             type: Number,
@@ -62,20 +63,12 @@ workoutSchema.methods.setThumbnail = function setThumbnail(thumbnailPath){
     this.thumbnailPath = thumbnailPath;
 }
 
-workoutSchema.methods.setRounds = function setRounds(rounds){
-    this.rounds = rounds;
-}
-
-workoutSchema.methods.addWorkoutExercise = function addWorkoutExercise(exercise){
-    this.exercises.push(exercise);
-}
-
 workoutSchema.methods.addWorkoutGroup = function addWorkoutGroup(group){
-    this.groups.push(group);
+    this.workoutGroups.push(group);
 }
 
-workoutSchema.methods.resetExercises = function resetExercises(){
-    this.exercises = []
+workoutSchema.methods.resetGroups = function resetGroups(){
+    this.workoutGroups = []
 }
 
 workoutSchema.plugin(uniqueValidator, { message: "Már létezik ilyen nevű edzés!" });

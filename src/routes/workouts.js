@@ -10,6 +10,8 @@ import path from "path";
 
 const router = express.Router();
 
+///////////////////////////////////
+// Multer konfigurációja
 // A multer könytár segítségével tudjuk tárolni a kliens által küldött fájlokat a lemezen
 // Multer GitHub + dokumentáció: https://github.com/expressjs/multer https://www.npmjs.com/package/multer
 const workoutStorage = multer.diskStorage({
@@ -23,17 +25,21 @@ const workoutStorage = multer.diskStorage({
 
 })
 
+// Feltöltési paraméterek (hely, kiterjesztések) állítása
 const upload = multer({ storage: workoutStorage,
   fileFilter: (req, file, cb) => {
     const ext = path.extname(file.originalname)
     if(ext !== ".jpg" && ext !== ".jpeg" && ext !== ".png"){
-        console.log(ext)
         return cb(new Error());
     }
     cb(null, true)
   }
  }).single("workout");
-//////////  Borítókép feltöltése
+//
+///////////////////////////////////
+
+///////////////////////////////////
+//  Borítókép feltöltése
 router.post("/upload_file", (req, res) => {
     upload(req, res, (err) => {
         if (err) {
@@ -43,8 +49,11 @@ router.post("/upload_file", (req, res) => {
         }
     })
 });
+//
+///////////////////////////////////
 
-//////////  Borítókép eltávolítása
+///////////////////////////////////
+//  Borítókép eltávolítása
 router.post("/delete_file", (req, res) => {
   const {thumbnailPath} = req.body.file;
   fs.unlink(thumbnailPath, err => {
@@ -53,29 +62,43 @@ router.post("/delete_file", (req, res) => {
 
   return res.json({thumbnailPath: ""})
 })
+//
+///////////////////////////////////
 
-//////////  Új edzés létrehozása
+///////////////////////////////////
+// Új edzés létrehozása
 router.post("/add_workout", (req, res) => {
-  const { name, owner, workoutExercises, thumbnailPath, description, rounds} = req.body.workout;
+  const { name, owner, workoutGroups, thumbnailPath, description} = req.body.workout;
   const workout = new Workout({ name });
-  var group = {exercises: [{exercise: "" }], rounds: "" }
   workout.setDesc(description);
   workout.setThumbnail(thumbnailPath);
-  //workout.setRounds(rounds);
+
+// Workout groupok töltése, majd mentése a workout objektumba
+  workoutGroups.forEach(item => {
+    workout.addWorkoutGroup(item);
+  })
 
 // A User model alapján megkeressük a paraméterben megkapott felhasználót, majd beállítjuk a hivatkozást
 // Segítség: https://stackoverflow.com/questions/38298927/get-id-with-mongoose
   User.findOne({ email: owner.email }).lean().exec((error, user) => {
-    workout.setOwner(user._id )
+    if(user){
+      workout.setOwner( user._id );
+
+      workout.save()
+      .then(wRecord => 
+        res.json({ workout: wRecord})
+      )
+      .catch((err) => {res.status(400).json({ errors: parseErrors(err.errors) });
+      });
+    }
+ 
     if(error){
-        return res.status(400).json({erros: {global: "Nem sikerült létrehozni a bejegyzést mert nem létezik a felhasználó."}})
+      return res.status(400).json({erros: {global: "Nem sikerült létrehozni a bejegyzést mert a felhasználó nem létezik."}})
     }
   })
-
-  // Workout groupok töltése, majd mentése a workout objektumba
   
   // Létre kell hoznunk az edzéshez kapcsolódó workoutExercise objektummokat, majd a PUSH segítségével beküldjük
-  workoutExercises.forEach(item => {
+  /*workoutExercises.forEach(item => {
 
     Exercise.findOne({ name: item.Exercise.name }).lean().exec((error, ex) => {
       workout.addWorkoutExercise({exercise: ex._id, reps: item.reps, rest: item.rest})
@@ -84,17 +107,14 @@ router.post("/add_workout", (req, res) => {
       }
     })
 
-  })
+  })*/
 
-  workout.save()
-    .then(wRecord => 
-      res.json({ workout: wRecord})
-    )
-    .catch((err) => {res.status(400).json({ errors: parseErrors(err.errors) });
-    });
 });
+//
+///////////////////////////////////
 
-//////////  Edzés módosítása
+///////////////////////////////////
+//  Edzés módosítása
 router.post("/update_workout", (req, res) => {
   const {workout} = req.body;
 
@@ -103,17 +123,17 @@ router.post("/update_workout", (req, res) => {
       work.setName(workout.name)
       work.setDesc(workout.description)
       work.setThumbnail(workout.thumbnailPath)
-      work.setRounds(workout.rounds);
-      work.resetExercises();
+      work.resetGroups();
 
-      workout.workoutExercises.forEach(item => {
-        console.log(item)
-        Exercise.findOne({ name: item.name }).lean().exec((error, ex) => {
+      workout.workoutGroups.forEach(group => {
+        console.log(group)
+        work.addWorkoutGroup(group)
+/*        Exercise.findOne({ name: item.name }).lean().exec((error, ex) => {
           work.addWorkoutExercise({exercise: ex._id, name: item.name, thumbnailPath: item.thumbnailPath, reps: item.reps, rest: item.rest})
           if(error){
             return res.status(400).json({errors: {global: "Nem sikerült létrehozni a bejegyzést mert nem létezik az edzés!"}})
           }
-        })
+        })*/
     
       })
   
@@ -133,7 +153,11 @@ router.post("/update_workout", (req, res) => {
 
   })
 });
-//////////  Edzés törlése
+//
+///////////////////////////////////
+
+///////////////////////////////////
+//  Edzés törlése
 
 router.post("/delete_workout", (req, res) => {
   const {workout} = req.body;
@@ -142,8 +166,11 @@ router.post("/delete_workout", (req, res) => {
     .then(() => res.status(200).json({success: "Sikeres törlés!"}))
     .catch(() => res.status(400).json({ errors: {global: "Hiba történt az edzés törlése közben!"}}))
 })
+//
+///////////////////////////////////
 
-//////////  Összes edzés lekérése
+///////////////////////////////////
+//  Összes edzés lekérése
 // Meghívható paraméterül átadott felhasználóval és peraméter nélkül
 // Paraméteres esetben a felhasználó által készített edzéssel adja vissza
 // Paraméter nélkül az összes edzéssel tér vissza
@@ -173,13 +200,19 @@ router.post("/get_workouts", (req, res) => {
         })
     }
 });
+//
+///////////////////////////////////
 
-//////////  Adott edzés lekérése
+///////////////////////////////////
+//  Adott edzés lekérése
 router.post("/get_workout", (req, res) => {
   const {workout} = req.body;
   Workout.findById(workout).then(workout => {
-    if(workout) res.json({workout})
+    if(workout) {res.json({workout})}
     else res.status(400).json({errors: { global: "Hiba történt az edzés lekérése közben!"}})
   })
 })
+//
+///////////////////////////////////
+
 export default router;
