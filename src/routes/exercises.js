@@ -10,6 +10,7 @@ import path from "path";
 
 const router = express.Router();
 
+///////////////////////////////////
 // A multer könytár segítségével tudjuk tárolni a kliens által küldött fájlokat a lemezen
 // Multer GitHub + dokumentáció: https://github.com/expressjs/multer https://www.npmjs.com/package/multer
 const storage = multer.diskStorage({
@@ -34,7 +35,8 @@ const upload = multer({ storage: storage,
   }
  }).single("video");
 
-////////// Fájl feltöltése multer segítségével
+///////////////////////////////////
+// Fájl feltöltése multer segítségével
 router.post("/upload_file", function(req, res) {
     upload(req, res, (err) => {
         if (err) {
@@ -45,7 +47,8 @@ router.post("/upload_file", function(req, res) {
     })
 });
 
-//////////  Új gyakorlat létrehozása
+///////////////////////////////////
+//  Új gyakorlat létrehozása
 router.post("/add_exercise", (req, res) => {
   const { name, owner, filePath, thumbnailPath } = req.body.exercise;
   const exercise = new Exercise({ name });
@@ -68,7 +71,8 @@ router.post("/add_exercise", (req, res) => {
     .catch((err) => res.status(400).json({ errors: parseErrors(err.errors) }));
 });
 
-//////////  Gyakorlat módosítása
+///////////////////////////////////
+//  Gyakorlat módosítása
 router.post("/update_exercise", (req, res) => {
   console.log(req.body)
   const {exercise} = req.body;
@@ -95,8 +99,9 @@ router.post("/update_exercise", (req, res) => {
 
   })
 });
-//////////  Gyakorlat törlése
 
+///////////////////////////////////
+//  Gyakorlat törlése
 router.post("/delete_exercise", (req, res) => {
   const {exercise} = req.body;
 
@@ -105,7 +110,8 @@ router.post("/delete_exercise", (req, res) => {
     .catch(() => res.status(400).json({ errors: {global: "Hiba történt a gyakorlat törlése közben!"}}))
 })
 
-//////////  Borítókép készítése ffmpeg segtségével
+///////////////////////////////////
+//  Borítókép készítése ffmpeg segtségével
 router.post("/create_thumbnail", (req, res) => {
     const {filePath} = req.body.data;
 
@@ -133,7 +139,8 @@ router.post("/create_thumbnail", (req, res) => {
         });
 });
 
-//////////  Borítókép és a hozzá tartozó viddeó eltávolítása
+///////////////////////////////////
+//  Borítókép és a hozzá tartozó videó eltávolítása
 router.post("/delete_files", (req, res) => {
   const {filePath, thumbnailPath} = req.body.data;
   fs.unlink(filePath, err => {
@@ -147,10 +154,11 @@ router.post("/delete_files", (req, res) => {
   return res.json({filePath: "", thumbnailPath: ""})
 })
 
-//////////  Összes gyakorlat lekérése
-// Meghívható paraméterül átadott felhasználóval és peraméter nélkül
-// Paraméteres esetben a felhasználó által készített gyakorlatokat adja vissza
-// Paraméter nélkül az összes gyakorlattal tér vissza
+///////////////////////////////////
+//  Összes gyakorlat lekérése
+//// Meghívható paraméterül átadott felhasználóval és peraméter nélkül
+//// Paraméteres esetben a felhasználó által készített gyakorlatokat adja vissza
+//// Paraméter nélkül az összes gyakorlattal tér vissza
 router.post("/get_exercises", (req, res) => {
   if(req.body.user){
     User.find({email: req.body.user.email}).then((user)=>{
@@ -178,7 +186,8 @@ router.post("/get_exercises", (req, res) => {
     }
 });
 
-//////////  Konkrét gyakorlat lekérése
+///////////////////////////////////
+//  Konkrét gyakorlat lekérése
 router.post("/get_exercise", (req, res) => {
   const {exercise} = req.body;
   Exercise.findById(exercise).then(ex => {
