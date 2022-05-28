@@ -74,7 +74,7 @@ router.post("/add_program", (req, res) => {
   // Létre kell hoznunk az edzéshez kapcsolódó workoutExercise objektumokat, majd a PUSH segítségével beküldjük
   workouts.forEach(item => {
     Workout.findOne({ name: item.name }).lean().exec((error, workout) => {
-      program.addWorkout({workout: workout._id})
+      program.addWorkout({workout: workout})
       if(error){
         return res.status(400).json({errors: {global: "Nem sikerült létrehozni a bejegyzést mert nem létezik az edzés!"}})
       }
