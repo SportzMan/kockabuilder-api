@@ -10,7 +10,7 @@ export default (req, res, next) => {
   if (token) {
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
       if (err) {
-        res.status(401).json({ errors: { global: "Invalid token" } });
+        res.status(401).json({ errors: { global: "Érvénytelen token" } });
       } else {
         User.findOne({ email: decoded.email }).then(user => {
           req.currentUser = user;
@@ -19,6 +19,6 @@ export default (req, res, next) => {
       }
     });
   } else {
-    res.status(401).json({ errors: { global: "No token" } });
+    res.status(401).json({ errors: { global: "Nincs token" } });
   }
 };

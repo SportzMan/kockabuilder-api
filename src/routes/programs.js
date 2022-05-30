@@ -56,11 +56,11 @@ router.post("/delete_file", (req, res) => {
 
 ////////// Új edzésprogram létrehozása
 router.post("/add_program", (req, res) => {
-  const { name, owner, workouts, thumbnailPath, description, isfree } = req.body.program;
+  const { name, owner, workouts, thumbnailPath, description, isFree } = req.body.program;
   const program = new Program({ name });
   program.setDesc(description);
   program.setThumbnail(thumbnailPath);
-  program.setType(isfree);
+  program.setType(isFree);
 
 // A User model alapján megkeressük a paraméterben megkapott felhasználót, majd beálltjuk a hivatkozást
 // Segítség: https://stackoverflow.com/questions/38298927/get-id-with-mongoose
@@ -74,7 +74,7 @@ router.post("/add_program", (req, res) => {
   // Létre kell hoznunk az edzéshez kapcsolódó workoutExercise objektumokat, majd a PUSH segítségével beküldjük
   workouts.forEach(item => {
     Workout.findOne({ name: item.name }).lean().exec((error, workout) => {
-      program.addWorkout({workout: workout})
+      program.addWorkout(workout);
       if(error){
         return res.status(400).json({errors: {global: "Nem sikerült létrehozni a bejegyzést mert nem létezik az edzés!"}})
       }
@@ -93,27 +93,27 @@ router.post("/add_program", (req, res) => {
 router.post("/update_program", (req, res) => {
   const {program} = req.body;
 
+
   Program.findOne({name: program.originalName}).then((prog) => {
     if(prog){
       prog.setName(program.name)
       prog.setDesc(program.description)
       prog.setThumbnail(program.thumbnailPath)
-      prog.setType(program.isfree);
+      prog.setType(program.isFree);
       prog.resetWorkouts();
 
-      prog.workouts.forEach(item => {
+      program.workouts.forEach(item => {
+        console.log(item.name)
         Workout.findOne({ name: item.name }).lean().exec((error, workout) => {
-          prog.addWorkout({workout: workout._id})
           if(error){
             return res.status(400).json({errors: {global: "Nem sikerült létrehozni a bejegyzést mert nem létezik az edzés!"}})
           }
+          prog.addWorkout(workout);
         })
     
       })
-  
       prog.save()
-        .then(progRecord => {
-          console.log(progRecord)
+        .then((progRecord) => {
           res.json({program: progRecord})
         })
         .catch((err) => res.status(400).json({ errors: parseErrors(err.errors) }));

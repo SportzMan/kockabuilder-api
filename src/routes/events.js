@@ -7,12 +7,12 @@ import parseErrors from "../utils/parseErrors.js";
 const router = express.Router();
 
 router.post("/add_event", (req, res) => {
-  const {event_req, user} = req.body.event;
+  const {event} = req.body;
 
-  User.findOne({ email: user.email}).lean().exec((error, user) => {
-    const event = new Event({title: event_req.title, user: user._id, color: event_req.color, from: event_req.from, to: event_req.to})
+  User.findOne({ email: event.user.email}).lean().exec((error, user) => {
+    const eventDB = new Event({title: event.title, user: user._id, color: event.color, from: event.from, to: event.to})
 
-    event.save()
+    eventDB.save()
     .then((eventRecord) => {
       res.json({ event: eventRecord})
     })

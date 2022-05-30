@@ -126,15 +126,7 @@ router.post("/update_workout", (req, res) => {
       work.resetGroups();
 
       workout.workoutGroups.forEach(group => {
-        console.log(group)
         work.addWorkoutGroup(group)
-/*        Exercise.findOne({ name: item.name }).lean().exec((error, ex) => {
-          work.addWorkoutExercise({exercise: ex._id, name: item.name, thumbnailPath: item.thumbnailPath, reps: item.reps, rest: item.rest})
-          if(error){
-            return res.status(400).json({errors: {global: "Nem sikerült létrehozni a bejegyzést mert nem létezik az edzés!"}})
-          }
-        })*/
-    
       })
   
       work.save()
