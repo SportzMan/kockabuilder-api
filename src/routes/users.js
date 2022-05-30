@@ -116,4 +116,13 @@ router.post("/membership", (req, res) => {
   })
 })
 
+///////////////////////////////////
+//  Gyakorlat törlése
+router.post("/delete_user", (req, res) => {
+  const {user} = req.body;
+  User.findOneAndRemove({username: user.username})
+    .then(() => res.status(200).json({success: "Sikeres törlés!"}))
+    .catch(() => res.status(400).json({ errors: {global: "Hiba történt a gyakorlat törlése közben!"}}))
+})
+
 export default router;
